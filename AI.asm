@@ -23,21 +23,29 @@ cPn: .asciiz ")\n"
 #		For every point in the matrix, check its down & right connections positions to see if it is taken;
 #		if not, place it into grid and end program.
 #	Obstacles:
-#		- valic_loc call unknown (how do I pass in a coord & dir?)
-#		- ditto for update
-#		- depending on above, may have to shift 0-5 -> 1-6 or change how "D/R" are passed in
+#		~ valic_loc call unknown (how do I pass in a coord & dir?) ~
+#		~ ditto for update ~
+#		~ depending on above, may have to shift 0-5 -> 1-6 or change how "D/R" are passed in ~
 #
 # for(int i=1; i<=SZ_X; i++)
 #	for(char j='A'; j<=SZ_Y; j++)
 #	{
-#		if(valid_loc(i,j,'D'))
+#		Decode(i,j,'D')
+#		if(valid_loc(disp, dir))
 #		{
+#			Decode(i,j,'D')
 #			update(i,j,'D');
+#			if(update(...))
+#				i=1; j='A';
 #			return;
 #		}
-#		if(valid_loc(i,j,'R'))
+#		Decode(i,j,'R')
+#		if(valid_loc(disp, dir))
 #		{
+#			Decode(i,j,'D')
 #			update(i,j,'R');
+#			if(update(...))
+#				i=1; j='A';
 #			return;
 #		}
 #	}
@@ -48,16 +56,10 @@ cPn: .asciiz ")\n"
 AIExec:
 
 # Let t0 = i, t1 = j, t2 = SZ_X, t3 = SZ_Y
-move $t0, $zero
+addi $t0, $zero, 1
 addi $t1, $zero, 'A'
-addi $t2, $zero, 6
+addi $t2, $zero, 7
 addi $t3, $zero, 'I'
-move $t4, $ra		# store $ra for later
-
-#store a0-2 (unsure if necessary)
-#move $t4, $a0
-#move $t5, $a1
-#move $t6, $a2
 
 ai_forx:		#while(
 beq $t0, $t2, ai_endx	# t0 != SZ_X )
@@ -92,7 +94,7 @@ la $a0, comma
 syscall
 
 #x
-li $v0, 1
+li $v0, 11
 move $a0, $t1
 syscall
 
@@ -114,16 +116,63 @@ syscall
 move $a0, $t0
 move $a1, $t1
 addi $a2, $zero, 'R'
+
+#(i,j,'R') -> (disp, dir)
+addi $sp, $sp, -4
+sw $ra, 0($sp)
+
+jal Decode
+
+lw $ra, 0($sp)
+addi $sp, $sp, 4
+
+move $a0, $v0
+move $a1, $v1
+
+# (disp, dir) -> valid_loc(disp,dir)
+
+addi $sp, $sp, -4
+sw $ra, 0($sp)
+
 jal valid_loc
 
-#if so
+lw $ra, 0($sp)
+addi $sp, $sp, 4
+
+#if valid_loc is true,
 bne $v0, 1, ai_rupdend
 
 #update(i,j,'R')
 move $a0, $t0
 move $a1, $t1
 addi $a2, $zero, 'R'
-jal Update #update grid (?)
+
+#(i,j,'R') -> (disp, dir)
+addi $sp, $sp, -4
+sw $ra, 0($sp)
+
+jal Decode
+
+lw $ra, 0($sp)
+addi $sp, $sp, 4
+
+move $a0, $v0
+move $a1, $v1
+
+# (disp, dir) -> update(disp, dir)
+
+addi $sp, $sp, -4
+sw $ra, 0($sp)
+
+jal Update
+
+lw $ra, 0($sp)
+addi $sp, $sp, 4
+
+# update returns 0/1 depending on if it scored
+# if it did, do your victory dance (repeat program to see if you score again)
+bnez $v0, AIExec
+
 j ai_endx #end subrt
 
 #otherwise, move on
@@ -134,16 +183,64 @@ ai_rupdend:
 move $a0, $t0
 move $a1, $t1
 addi $a2, $zero, 'D'	#if(valid_loc(i,j,'D')) ; (i,j) should not change since last call but just in case
+
+#(i,j,'R') -> (disp, dir)
+addi $sp, $sp, -4
+sw $ra, 0($sp)
+
+jal Decode
+
+lw $ra, 0($sp)
+addi $sp, $sp, 4
+
+move $a0, $v0
+move $a1, $v1
+
+# (disp, dir) -> valid_loc(disp,dir)
+
+addi $sp, $sp, -4
+sw $ra, 0($sp)
+
 jal valid_loc
 
-#if so
+lw $ra, 0($sp)
+addi $sp, $sp, 4
+
+#if valid_loc is true,
 bne $v0, 1, ai_dupdend
 
 #update(i,j,'D')
 move $a0, $t0
 move $a1, $t1
 addi $a2, $zero, 'D'
-jal Update #update grid
+
+#(i,j,'R') -> (disp, dir)
+addi $sp, $sp, -4
+sw $ra, 0($sp)
+
+jal Decode
+
+lw $ra, 0($sp)
+addi $sp, $sp, 4
+
+move $a0, $v0
+move $a1, $v1
+
+# (disp, dir) -> update(disp, dir)
+
+addi $sp, $sp, -4
+sw $ra, 0($sp)
+
+jal Update
+
+lw $ra, 0($sp)
+addi $sp, $sp, 4
+
+# update returns 0/1 depending on if it scored
+# if it did, do your victory dance (repeat program to see if you score again) [again]
+bnez $v0, AIExec
+
+#jal Update #update grid
 j ai_endx #end subrt
 
 ai_dupdend:
@@ -160,6 +257,6 @@ j ai_forx
 
 ai_endx:
 
-move $ra, $t4	# restore $ra
+#if you get here w/o modifying board, board is full.
 
 jr $ra
