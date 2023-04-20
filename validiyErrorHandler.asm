@@ -9,6 +9,7 @@
 
 .data
 
+.globl valid_loc
 
 .text
 

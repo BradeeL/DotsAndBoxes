@@ -47,6 +47,9 @@
 #		}while(invalidInput);
 
 .data
+
+.globl Request Decode
+
 validDirs: .asciiz "URDL"
 inPrompt: .asciiz "\nPlease enter a move ([column][row][ u | d | l | r ]: "
 input: .space 4
@@ -122,10 +125,20 @@ Invalid:
 	syscall
 	j Request
 
-Decode: #convert from inputted system to memory jump for board
-
-	#CONVERT
+#Description: Takes in arguments: Row [$a0], Colomn [$a1], Direction [$a2]
+#and returns the corrisponding memory_displacement [$v0] and direction [$v1]
+Decode:
 	
-	#RETURN TO GAME
+			addi $t0, $zero, 32	#r*2*16 --> r*32
+			mult $a1, $t0
+			mflo $a1
+			
+			addi $t0, $zero, 2	#c*2
+			mult $a0, $t0
+			mflo $a0
 	
+			add $v0, $a1, $a0	#(r*2)*16 + (c*2)
+			move $v1, $a2		#direction [WASD]
+	
+			jr $ra			#return
 	
