@@ -113,18 +113,30 @@ syscall
 
 #assume valid_loc also handles oob scenarios
 			#if(valid_loc(i,j,'R'))
-move $a0, $t0
-move $a1, $t1
+#move $a0, $t0
+#move $a1, $t1
+#it's (c,r,D) not (r,c,D)
+move $a0, $t1
+move $a1, $t0
 addi $a2, $zero, 'R'
 
 #(i,j,'R') -> (disp, dir)
-addi $sp, $sp, -4
+#store current (i,j) and (imax,jmax) [sorry it looks repetitive but it's the best I got outside of making like 20 functions]
+addi $sp, $sp, -20
+sw $t0, 16($sp)
+sw $t1, 12($sp)
+sw $t2, 8($sp)
+sw $t3, 4($sp)
 sw $ra, 0($sp)
 
 jal Decode
 
 lw $ra, 0($sp)
-addi $sp, $sp, 4
+lw $t3, 4($sp)
+lw $t2, 8($sp)
+lw $t1, 12($sp)
+lw $t0, 16($sp)
+addi $sp, $sp, 20
 
 move $a0, $v0
 move $a1, $v1
@@ -134,7 +146,8 @@ move $a1, $v1
 addi $sp, $sp, -4
 sw $ra, 0($sp)
 
-jal valid_loc
+#ignore for now
+#jal valid_loc
 
 lw $ra, 0($sp)
 addi $sp, $sp, 4
@@ -143,31 +156,51 @@ addi $sp, $sp, 4
 bne $v0, 1, ai_rupdend
 
 #update(i,j,'R')
-move $a0, $t0
-move $a1, $t1
+#move $a0, $t0
+#move $a1, $t1
+#it's (c,r,D) not (r,c,D)
+move $a0, $t1
+move $a1, $t0
 addi $a2, $zero, 'R'
 
 #(i,j,'R') -> (disp, dir)
-addi $sp, $sp, -4
+addi $sp, $sp, -20
+sw $t0, 16($sp)
+sw $t1, 12($sp)
+sw $t2, 8($sp)
+sw $t3, 4($sp)
 sw $ra, 0($sp)
 
 jal Decode
 
 lw $ra, 0($sp)
-addi $sp, $sp, 4
+lw $t3, 4($sp)
+lw $t2, 8($sp)
+lw $t1, 12($sp)
+lw $t0, 16($sp)
+addi $sp, $sp, 20
 
 move $a0, $v0
 move $a1, $v1
+addi $a2, $zero, 0	#update has to know if it's an AI
 
 # (disp, dir) -> update(disp, dir)
 
-addi $sp, $sp, -4
+addi $sp, $sp, -20
+sw $t0, 16($sp)
+sw $t1, 12($sp)
+sw $t2, 8($sp)
+sw $t3, 4($sp)
 sw $ra, 0($sp)
 
 jal Update
 
 lw $ra, 0($sp)
-addi $sp, $sp, 4
+lw $t3, 4($sp)
+lw $t2, 8($sp)
+lw $t1, 12($sp)
+lw $t0, 16($sp)
+addi $sp, $sp, 20
 
 # update returns 0/1 depending on if it scored
 # if it did, do your victory dance (repeat program to see if you score again)
@@ -180,18 +213,29 @@ ai_rupdend:
 
 #### Down neighbor check
 
-move $a0, $t0
-move $a1, $t1
+#move $a0, $t0
+#move $a1, $t1
+#it's (c,r,D) not (r,c,D)
+move $a0, $t1
+move $a1, $t0
 addi $a2, $zero, 'D'	#if(valid_loc(i,j,'D')) ; (i,j) should not change since last call but just in case
 
 #(i,j,'R') -> (disp, dir)
-addi $sp, $sp, -4
+addi $sp, $sp, -20
+sw $t0, 16($sp)
+sw $t1, 12($sp)
+sw $t2, 8($sp)
+sw $t3, 4($sp)
 sw $ra, 0($sp)
 
 jal Decode
 
 lw $ra, 0($sp)
-addi $sp, $sp, 4
+lw $t3, 4($sp)
+lw $t2, 8($sp)
+lw $t1, 12($sp)
+lw $t0, 16($sp)
+addi $sp, $sp, 20
 
 move $a0, $v0
 move $a1, $v1
@@ -201,7 +245,8 @@ move $a1, $v1
 addi $sp, $sp, -4
 sw $ra, 0($sp)
 
-jal valid_loc
+#ignore for now
+#jal valid_loc
 
 lw $ra, 0($sp)
 addi $sp, $sp, 4
@@ -210,31 +255,51 @@ addi $sp, $sp, 4
 bne $v0, 1, ai_dupdend
 
 #update(i,j,'D')
-move $a0, $t0
-move $a1, $t1
+#move $a0, $t0
+#move $a1, $t1
+#it's (c,r,D) not (r,c,D)
+move $a0, $t1
+move $a1, $t0
 addi $a2, $zero, 'D'
 
 #(i,j,'R') -> (disp, dir)
-addi $sp, $sp, -4
+addi $sp, $sp, -20
+sw $t0, 16($sp)
+sw $t1, 12($sp)
+sw $t2, 8($sp)
+sw $t3, 4($sp)
 sw $ra, 0($sp)
 
 jal Decode
 
 lw $ra, 0($sp)
-addi $sp, $sp, 4
+lw $t3, 4($sp)
+lw $t2, 8($sp)
+lw $t1, 12($sp)
+lw $t0, 16($sp)
+addi $sp, $sp, 20
 
 move $a0, $v0
 move $a1, $v1
+addi $a2, $zero, 0	#update has to know if it's an AI
 
 # (disp, dir) -> update(disp, dir)
 
-addi $sp, $sp, -4
+addi $sp, $sp, -20
+sw $t0, 16($sp)
+sw $t1, 12($sp)
+sw $t2, 8($sp)
+sw $t3, 4($sp)
 sw $ra, 0($sp)
 
 jal Update
 
 lw $ra, 0($sp)
-addi $sp, $sp, 4
+lw $t3, 4($sp)
+lw $t2, 8($sp)
+lw $t1, 12($sp)
+lw $t0, 16($sp)
+addi $sp, $sp, 20
 
 # update returns 0/1 depending on if it scored
 # if it did, do your victory dance (repeat program to see if you score again) [again]
