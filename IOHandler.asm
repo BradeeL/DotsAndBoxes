@@ -57,6 +57,10 @@ invalidPrompt: .asciiz "\nThat move is invalid. Consult manual for correct forma
 .text
 
 Request: 
+	addi $sp $sp -4#store return address for main
+	sw $ra 4($sp)
+	
+	
 	#Request string from user input
 	la $a0 inPrompt
 	li $v0 4
@@ -71,9 +75,15 @@ Request:
 	
 	beq $v0 0 InvalidLoop
 	
+	move $a0 $s1
+	move $a1 $s0
+	move $a2 $s2
+	
 	jal Decode
 	
-	j end
+	addi $sp $sp 4
+	lw $ra ($sp)
+	jr $ra
 	
 InvalidLoop:
 	la $a0 invalidPrompt
@@ -99,4 +109,3 @@ Decode:
 	
 			jr $ra			#return
 	
-end:
