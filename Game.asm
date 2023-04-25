@@ -45,32 +45,33 @@ Update:
 		move $t6, $a1
 	
 #SWITCHING LOGIC BASED ON USER DIRECTIONAL INPUT
-	
-		addi $t0, $zero, 87			#is returned dir = W
-		beq $t0, $t6, W
-	
-		addi $t0, $zero, 65			#is returned dir = A
-		beq $t0, $t6, A
-	
-		addi $t0, $zero, 83			#is returned dir = S
-		beq $t0, $t6, S
-	
-		addi $t0, $zero, 68			#is returned dir = D
+
+		addi $t0, $zero, 0			#is returned dir = U
+		beq $t0, $t6, U
+
+		addi $t0, $zero, 1			#is returned dir = R
+		beq $t0, $t6, R
+
+		addi $t0, $zero, 2			#is returned dir = D
 		beq $t0, $t6, D
+		
+		addi $t0, $zero, 3			#is returned dir = L
+		beq $t0, $t6, L
+
 	
-W:		addi $t7, $t7, -16			#Displace memory 
+U:		addi $t7, $t7, -16			#Displace memory 
 		addi $t0, $zero, 1			#Store directional flag (Vertical : 1, Horizontal : 0)
 		j Exit_rSWTCH
 
-A:		addi $t7, $t7, -1			#Displace memory
+L:		addi $t7, $t7, -1			#Displace memory
 		addi $t0, $zero, 0			#Store directional flag (Vertical : 1, Horizontal : 0)
 		j Exit_rSWTCH
 	
-S:		addi $t7, $t7, 16			#Displace memory
+D:		addi $t7, $t7, 16			#Displace memory
 		addi $t0, $zero, 1			#Store directional flag (Vertical : 1, Horizontal : 0)
 		j Exit_rSWTCH
 
-D:		addi $t7, $t7, 1			#Displace memory
+R:		addi $t7, $t7, 1			#Displace memory
 		addi $t0, $zero, 0			#Store directional flag (Vertical : 1, Horizontal : 0)
 		j Exit_rSWTCH
 
@@ -78,16 +79,20 @@ Exit_rSWTCH:	move $t1, $zero				#Setting point tracker [$t1]
 		addi $t2, $zero, 80			#Setting point char as P
 		bne $a2, $zero, dir_branch		#Change point char setting if AI_Turn
 
-		addi $t2, $t2, 65			#Setting point char to A
+		addi $t2, $zero, 65			#Setting point char to A
 		
 dir_branch:	beq $t0, $zero, Horizontal		#If (A || D --> Horizontal) else if(W || S --> Vertical)
 
 
 #CHARACTER PLACEMENT AND POINT HANDLING
+
 Vertical:	addi $t0, $zero, 124			#Store '|' into calculated memory location, $t0 holds ASCII value
 		sb $t0, board($t7)
+		la $t3, board
+		add $t7, $t7, $t3
 		
-v_checkR:	lb $t0, -17($t7)			#Check right box lines
+v_checkR:	
+		lb $t0, -17($t7)			#Check right box lines
 		beq $t0, 32, v_checkL			#If == ' ' --> break to left check (no Point)
 		
 		lb $t0, -2($t7)				#Check right box lines
@@ -97,7 +102,7 @@ v_checkR:	lb $t0, -17($t7)			#Check right box lines
 		beq $t0, 32, v_checkL			#If == ' ' --> break to left check  (no Point)
 		
 		addi $t1, $t1, 1			#Award a point
-		sb $t2, 1($t7)				#Storing graphical representation
+		sb $t2, -1($t7)				#Storing graphical representation
 
 
 v_checkL:	lb $t0, -15($t7)			#Check left box lines	
@@ -110,7 +115,7 @@ v_checkL:	lb $t0, -15($t7)			#Check left box lines
 		beq $t0, 32, Exit_dirIF		#If == ' ' --> break (no Point)
 		
 		addi $t1, $t1, 1			#Award a point
-		sb $t2, -1($t7)				#Storing graphical representation
+		sb $t2, 1($t7)				#Storing graphical representation
 		
 		j Exit_dirIF
 
@@ -120,6 +125,8 @@ v_checkL:	lb $t0, -15($t7)			#Check left box lines
 
 Horizontal:	addi $t0, $zero, 45			#Store '-' into calculated memory location, $t0 holds ASCII value
 		sb $t0, board($t7)
+		la $t3, board
+		add $t7, $t7, $t3
 		
 h_checkU:	lb $t0, -15($t7)			#Check right box lines
 		beq $t0, 32, h_checkD			#If == ' ' --> break to left check (no Point)
@@ -159,8 +166,7 @@ Player_Turn:	add $s6, $s6, $t1			#Adding points
 AI_Turn:	add $s7, $s7, $t1			#Adding points
 
 		j Exit_Update	
-		
-		
+
 Exit_Update:	#Set game Over
 		jr $ra					#return
 
