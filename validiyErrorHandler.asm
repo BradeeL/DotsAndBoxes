@@ -10,7 +10,7 @@
 .data
 validDirs: .asciiz "URDL"
 
-.globl valid_loc
+.globl CheckDirOut
 .globl input_check
 
 .text
@@ -21,16 +21,16 @@ validDirs: .asciiz "URDL"
 input_check:
 	lb $t0 ($a0) #usrIn[0] (a-h)
 	andi $t0 $t0 95 #convert to uppercase
-	bge $t0 73 Invalid
-	ble $t0 64 Invalid
+	bgt $t0 73 Invalid
+	blt $t0 64 Invalid
 	
-	addi $t0 $t0 -64#adjust ascii range from 65-72 to 1-8
+	addi $t0 $t0 -65 #adjust ascii range from 65-72 to 1-8
 	move $s0 $t0
 	
-	lb $t0 1($a0)#load input row
-	addi $t0 $t0 -48#adjust range from 49-54 to 1-6
+	lb $t0 1($a0) #load input row
+	addi $t0 $t0 -49 #adjust range from 49-54 to 1-6
 	bge $t0 7 Invalid
-	ble $t0 0 Invalid
+	blt $t0 0 Invalid
 	
 	move $s1 $t0
 	
@@ -58,9 +58,16 @@ input_check:
 	beq $t0 $t1 CheckDir
 	
 	j Invalid
-	
-	
+
+#for outer functions	
+CheckDirOut:
+
+	move $s0, $a0
+	move $s1, $a1
+	move $s2, $a2
+
 CheckDir:
+
 	##TODO: check if direction is out of bounds (example: a4l invalid, cannot go left from column 'a'
 	seq $t0 $s2 0 #if dir==up and row==1, then invalid
 	seq $t1 $s1 1
