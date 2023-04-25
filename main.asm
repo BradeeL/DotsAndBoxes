@@ -19,7 +19,7 @@
 
 .data
 
-.globl main
+.globl main exit_game
 
 .text
 

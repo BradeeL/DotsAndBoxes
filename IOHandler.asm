@@ -51,9 +51,9 @@
 .globl Request Decode
 
 validDirs: .asciiz "URDL"
-inPrompt: .asciiz "\nPlease enter a move ([column][row][ u | d | l | r ]: "
+inPrompt: .asciiz "\nType 'q' to quit.\nPlease enter a move ([column][row][ u | d | l | r ]: "
 input: .space 4
-invalidPrompt: .asciiz "\nThat move is invalid. Consult manual for correct format.\n"
+invalidPrompt: .asciiz "\nThat move is invalid.\n"
 .text
 
 Request: 
@@ -89,6 +89,13 @@ Request:
 	
 	jal Decode
 	
+	move $a0 $v0
+	jal valid_loc
+	beq $v0 $zero InvalidLoop
+	
+	move $v0 $a0
+	
+	
 	addi $sp $sp 4
 	lw $ra ($sp)
 	jr $ra
@@ -97,6 +104,7 @@ InvalidLoop:
 	la $a0 invalidPrompt
 	li $v0 4
 	syscall
+	
 	j Request
 	
 
