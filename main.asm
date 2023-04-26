@@ -21,12 +21,15 @@
 
 .globl main exit_game
 
+p_winner: .asciiz "The player wne"
+a_winner: .asciiz "The AI one"
+
 .text
 
 #Runs main loop of the program 
-main:		
-		
-		
+main:		addi $s4, $zero, 0
+		addi $s5, $zero, 35
+	
 
 main_Loop:	jal Render			#Print board to console
 		
@@ -39,6 +42,10 @@ main_Loop:	jal Render			#Print board to console
 		jal Update			#Function call update
 		
 		jal good_sound
+		
+		#LOOPING
+		bne $zero, $s4, exit_game	#If game is not over(0) --> loop
+		bne $v0, $zero, main_Loop	#Loop back if player scored points
 		
 		jal Render			#Render User move
 		jal AIExec			#AI Turn
