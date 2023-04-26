@@ -31,7 +31,7 @@ main:		addi $s4, $zero, 0
 		addi $s5, $zero, 35
 	
 
-main_Loop:	#jal Render			#Print board to console
+main_Loop:	jal Render			#Print board to console
 		
 		jal Request			#Request user input with validity handling
 		
@@ -49,7 +49,7 @@ main_Loop:	#jal Render			#Print board to console
 
 AI_Loop:
 
-		#jal Render			#Render User move
+		jal Render			#Render User move
 		jal AIExec			#AI Turn
 	
 		#LOOPING
