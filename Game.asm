@@ -113,6 +113,11 @@ v_checkR:	addi $t4, $t4, 2
 		beq $t0, 32, v_checkL			#If == ' ' --> break to left check  (no Point)
 		
 		addi $t1, $t1, 1			#Award a point
+		addi $sp $sp -4
+		sw $ra 4($sp)
+		jal point_sound
+		lw $ra 4($sp)
+		addi $sp $sp 4
 		addi $v0, $zero, 1			#Setting return value
 		sb $t2, 1($t7)				#Storing graphical representation
 
@@ -133,6 +138,13 @@ v_checkL:	addi $t3, $zero, 16
 		beq $t0, 32, Exit_dirIF		#If == ' ' --> break (no Point)
 		
 		addi $t1, $t1, 1			#Award a point
+		
+		addi $sp $sp -4
+		sw $ra 4($sp)
+		jal point_sound
+		lw $ra 4($sp)
+		addi $sp $sp 4
+		
 		addi $v0, $zero, 1			#Setting return value
 		sb $t2, -1($t7)				#Storing graphical representation
 		
@@ -162,6 +174,13 @@ h_checkU:	slti $t3, $t4, 16
 		beq $t0, 32, h_checkD			#If == ' ' --> break to left check  (no Point)
 		
 		addi $t1, $t1, 1			#Award a point
+		
+		addi $sp $sp -4
+		sw $ra 4($sp)
+		jal point_sound
+		lw $ra 4($sp)
+		addi $sp $sp 4
+		
 		addi $v0, $zero, 1			#Setting return value
 		sb $t2, -16($t7)			#Storing graphical representation
 
@@ -179,6 +198,13 @@ h_checkD:	slti $t3, $t4, 160
 		beq $t0, 32, Exit_dirIF		#If == ' ' --> break (no Point)
 		
 		addi $t1, $t1, 1			#Award a point
+		
+		addi $sp $sp -4
+		sw $ra 4($sp)
+		jal point_sound
+		lw $ra 4($sp)
+		addi $sp $sp 4
+		
 		addi $v0, $zero, 1			#Setting return value
 		sb $t2, 16($t7)				#Storing graphical representation
 		
