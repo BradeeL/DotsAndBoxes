@@ -62,29 +62,15 @@ addi $t2, $zero, 6
 addi $t3, $zero, 8
 
 ai_forx:		#while(
-beq $t0, $t2, ai_endx	# t0 != SZ_X )
+bge $t0, $t2, ai_endx	# t0 != SZ_X )
 
 #since it's a while loop, you gotta restart y each time you run x
-#addi $t1, $zero, 'A'
+addi $t1, $zero, 0
 
 ai_fory:		#while(
-beq $t1, $t3, ai_endy	# t1 != SZ_Y )
+bge $t1, $t3, ai_endy	# t1 != SZ_Y )
 
 #### Right neighbor check
-
-
-#FOR TESTING PURPOSES
-#FOR TESTING PURPOSES
-#FOR TESTING PURPOSES
-#Remove if you want neater code; I left this in just to show how it traverses the board
-
-#END FOR TESTING PURPOSES
-#END FOR TESTING PURPOSES
-#END FOR TESTING PURPOSES
-
-# Depending on how grid is traversed,
-# I may need to alter how update() works
-# I'll fix this fully once I/we get a solid understanding of the board going
 
 #assume CheckDirOut also handles oob scenarios
 			#if(CheckDirOut(i,j,'R'))
@@ -95,29 +81,21 @@ move $a0, $t1
 move $a1, $t0
 addi $a2, $zero, 1
 
+#if(y=7) v0=0
+sne $v0, $t1, 7
+
+#if CheckDirOut is true,
+beqz $v0, ai_rupdend
+
+# check if I can actually place (disp,dir)
+# pseduo: if (board(disp,dir)!=' ') $v0=0
+
+move $a0, $t1
+move $a1, $t0
+addi $a2, $zero, 1
+
+# store current (i,j) and (imax,jmax) [sorry it looks repetitive but it's the best I got outside of making like 20 functions]
 #(i,j,'R') -> (disp, dir)
-#store current (i,j) and (imax,jmax) [sorry it looks repetitive but it's the best I got outside of making like 20 functions]
-#addi $sp, $sp, -20
-#sw $t0, 16($sp)
-#sw $t1, 12($sp)
-#sw $t2, 8($sp)
-#sw $t3, 4($sp)
-#sw $ra, 0($sp)
-
-#jal Decode
-
-#lw $ra, 0($sp)
-#lw $t3, 4($sp)
-#lw $t2, 8($sp)
-#lw $t1, 12($sp)
-#lw $t0, 16($sp)
-#addi $sp, $sp, 20
-
-#move $a0, $v0
-#move $a1, $v1
-
-# (disp, dir) -> CheckDirOut(disp,dir)
-
 addi $sp, $sp, -20
 sw $t0, 16($sp)
 sw $t1, 12($sp)
@@ -125,7 +103,7 @@ sw $t2, 8($sp)
 sw $t3, 4($sp)
 sw $ra, 0($sp)
 
-jal CheckDirOut
+jal Decode
 
 lw $ra, 0($sp)
 lw $t3, 4($sp)
@@ -134,16 +112,13 @@ lw $t1, 12($sp)
 lw $t0, 16($sp)
 addi $sp, $sp, 20
 
-#if CheckDirOut is true,
-beqz $v0, ai_rupdend
+addi $v0, $v0, 1
+lb $t4, board($v0)
+seq $v0, $t4, 32
 
-# check if I can actually place (disp,dir)
-# pseduo: if (board(disp,dir)!=' ') $v0=0
-addi $a0, $a0, 1
-lb $t4, board($a0)
-seq $v0, $t4, ' '
+# end check
 
-#if CheckDirOut2 is true,
+#if the spot on the board is taken, move on to the next check
 beqz $v0, ai_rupdend
 
 #update(i,j,'R')
@@ -194,8 +169,6 @@ lw $t0, 16($sp)
 addi $sp, $sp, 20
 
 # update returns 0/1 depending on if it scored
-# if it did, do your victory dance (repeat program to see if you score again)
-#bnez $v0, AIExec
 
 j ai_endx #end subrt
 
@@ -211,28 +184,19 @@ move $a0, $t1
 move $a1, $t0
 addi $a2, $zero, 2	#if(CheckDirOut(i,j,'D')) ; (i,j) should not change since last call but just in case
 
+#if(x=5) v0=0
+sne $v0, $t0, 5
+
+#if CheckDirOut does not allow us to go, branch
+beqz $v0, ai_dupdend
+
+# check if I can actually place (disp,dir)
+# pseduo: if (board(disp,dir)!=' ') $v0=0
+move $a0, $t1
+move $a1, $t0
+addi $a2, $zero, 2
+
 #(i,j,'R') -> (disp, dir)
-#addi $sp, $sp, -20
-#sw $t0, 16($sp)
-#sw $t1, 12($sp)
-#sw $t2, 8($sp)
-#sw $t3, 4($sp)
-#sw $ra, 0($sp)
-
-#jal Decode
-
-#lw $ra, 0($sp)
-#lw $t3, 4($sp)
-#lw $t2, 8($sp)
-#lw $t1, 12($sp)
-#lw $t0, 16($sp)
-#addi $sp, $sp, 20
-
-#move $a0, $v0
-#move $a1, $v1
-
-# (disp, dir) -> CheckDirOut(disp,dir)
-
 addi $sp, $sp, -20
 sw $t0, 16($sp)
 sw $t1, 12($sp)
@@ -240,7 +204,7 @@ sw $t2, 8($sp)
 sw $t3, 4($sp)
 sw $ra, 0($sp)
 
-jal CheckDirOut
+jal Decode
 
 lw $ra, 0($sp)
 lw $t3, 4($sp)
@@ -249,18 +213,12 @@ lw $t1, 12($sp)
 lw $t0, 16($sp)
 addi $sp, $sp, 20
 
-#if CheckDirOut does not allow us to go, branch
+addi $v0, $v0, 16
+lb $t4, board($v0)
+seq $v0, $t4, 32
+
+#if the spot on the board is taken, move on to the next check
 beqz $v0, ai_dupdend
-
-# check if I can actually place (disp,dir)
-# pseduo: if (board(disp,dir)!=' ') $v0=0
-addi $a0, $a0, 16
-lb $t4, board($a0)
-seq $v0, $t4, ' '
-
-#if CheckDirOut2 is true,
-beqz $v0, ai_dupdend
-
 
 #update(i,j,'D')
 #move $a0, $t0
@@ -310,8 +268,6 @@ lw $t0, 16($sp)
 addi $sp, $sp, 20
 
 # update returns 0/1 depending on if it scored
-# if it did, do your victory dance (repeat program to see if you score again) [again]
-#bnez $v0, AIExec
 
 #jal Update #update grid
 j ai_endx #end subrt
