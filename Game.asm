@@ -11,9 +11,10 @@
 .data
 
 #SETTING GLOABALS
-.globl Update Render		#Setting global access for game funcitons
+.globl Update Render 		#Setting global access for game funcitons
 
 .globl board			#Setting gloabal access for game board
+
  
 #Initialize ASCII array
 board: 
@@ -31,6 +32,8 @@ board:
 	.asciiz ". . . . . . . ."	# 6
 	
 boardHLabel: .asciiz "A B C D E F G H\n" 
+playerPoints: .asciiz "\nPlayer Points: "
+AIPoints: .asciiz "\nAI Points: "
 
 .text
 
@@ -81,41 +84,57 @@ Exit_rSWTCH:	move $t1, $zero				#Setting point tracker [$t1]
 
 		addi $t2, $zero, 65			#Setting point char to A
 		
-dir_branch:	beq $t0, $zero, Horizontal		#If (A || D --> Horizontal) else if(W || S --> Vertical)
+dir_branch:	move $v0, $zero
+		beq $t0, $zero, Horizontal		#If (A || D --> Horizontal) else if(W || S --> Vertical)
 
 
 #CHARACTER PLACEMENT AND POINT HANDLING
 
 Vertical:	addi $t0, $zero, 124			#Store '|' into calculated memory location, $t0 holds ASCII value
 		sb $t0, board($t7)
+		move $t4, $t7
 		la $t3, board
 		add $t7, $t7, $t3
+		addi $t3, $zero, 16
 		
-v_checkR:	
-		lb $t0, -17($t7)			#Check right box lines
+v_checkR:	addi $t4, $t4, 2
+		div $t4, $t3
+		mfhi $t3
+		addi $t4, $t4, -2
+		beq $t3, $zero, v_checkL
+
+		lb $t0, 17($t7)			#Check right box lines
 		beq $t0, 32, v_checkL			#If == ' ' --> break to left check (no Point)
 		
-		lb $t0, -2($t7)				#Check right box lines
+		lb $t0, 2($t7)				#Check right box lines
 		beq $t0, 32, v_checkL			#If == ' ' --> break to left check  (no Point)
 		
-		lb $t0, 15($t7)				#Check right box lines
+		lb $t0, -15($t7)				#Check right box lines
 		beq $t0, 32, v_checkL			#If == ' ' --> break to left check  (no Point)
 		
 		addi $t1, $t1, 1			#Award a point
-		sb $t2, -1($t7)				#Storing graphical representation
-
-
-v_checkL:	lb $t0, -15($t7)			#Check left box lines	
-		beq $t0, 32, Exit_dirIF		#If == ' ' --> break (no Point)
-		
-		lb $t0, 2($t7)				#Check left box lines	
-		beq $t0, 32, Exit_dirIF		#If == ' ' --> break (no Point)
-		
-		lb $t0, 17($t7)				#Check left box lines	
-		beq $t0, 32, Exit_dirIF		#If == ' ' --> break (no Point)
-		
-		addi $t1, $t1, 1			#Award a point
+		addi $v0, $zero, 1			#Setting return value
 		sb $t2, 1($t7)				#Storing graphical representation
+
+
+v_checkL:	addi $t3, $zero, 16
+		div $t4, $t3				#Checking if left most column is selected
+		mfhi $t3
+		beq $zero, $t3, Exit_dirIF
+		
+		
+		lb $t0, 15($t7)			#Check left box lines	
+		beq $t0, 32, Exit_dirIF		#If == ' ' --> break (no Point)
+		
+		lb $t0, -2($t7)				#Check left box lines	
+		beq $t0, 32, Exit_dirIF		#If == ' ' --> break (no Point)
+		
+		lb $t0, -17($t7)				#Check left box lines	
+		beq $t0, 32, Exit_dirIF		#If == ' ' --> break (no Point)
+		
+		addi $t1, $t1, 1			#Award a point
+		addi $v0, $zero, 1			#Setting return value
+		sb $t2, -1($t7)				#Storing graphical representation
 		
 		j Exit_dirIF
 
@@ -125,10 +144,15 @@ v_checkL:	lb $t0, -15($t7)			#Check left box lines
 
 Horizontal:	addi $t0, $zero, 45			#Store '-' into calculated memory location, $t0 holds ASCII value
 		sb $t0, board($t7)
+		move $t4, $t7
 		la $t3, board
 		add $t7, $t7, $t3
 		
-h_checkU:	lb $t0, -15($t7)			#Check right box lines
+		
+h_checkU:	slti $t3, $t4, 16
+		bne $t3, $zero, h_checkD 
+		
+		lb $t0, -15($t7)			#Check right box lines
 		beq $t0, 32, h_checkD			#If == ' ' --> break to left check (no Point)
 		
 		lb $t0, -17($t7)				#Check right box lines
@@ -138,10 +162,14 @@ h_checkU:	lb $t0, -15($t7)			#Check right box lines
 		beq $t0, 32, h_checkD			#If == ' ' --> break to left check  (no Point)
 		
 		addi $t1, $t1, 1			#Award a point
+		addi $v0, $zero, 1			#Setting return value
 		sb $t2, -16($t7)			#Storing graphical representation
 
 
-h_checkD:	lb $t0, 15($t7)				#Check left box lines	
+h_checkD:	slti $t3, $t4, 160
+		beq $t3, $zero, Exit_dirIF
+		
+		lb $t0, 15($t7)				#Check left box lines	
 		beq $t0, 32, Exit_dirIF		#If == ' ' --> break (no Point)
 		
 		lb $t0, 17($t7)				#Check left box lines	
@@ -151,25 +179,30 @@ h_checkD:	lb $t0, 15($t7)				#Check left box lines
 		beq $t0, 32, Exit_dirIF		#If == ' ' --> break (no Point)
 		
 		addi $t1, $t1, 1			#Award a point
+		addi $v0, $zero, 1			#Setting return value
 		sb $t2, 16($t7)				#Storing graphical representation
 		
 		j Exit_dirIF
 		
-Exit_dirIF:	beq $t1, $zero, Exit_Update		#If no points scored exit update
+Exit_dirIF:	beq $t1, $zero, Exit_UpdateN		#If no points scored exit update
 		
 		beq $a2, $zero, AI_Turn		#Branch to appropriate turn
 		
 Player_Turn:	add $s6, $s6, $t1			#Adding points
 		
-		j Exit_Update				
+		j Exit_UpdateN				
 
 AI_Turn:	add $s7, $s7, $t1			#Adding points
 
-		j Exit_Update	
+		j Exit_UpdateN	
 
-Exit_Update:	#Set game Over
+Exit_UpdateN:	add $t0, $s7, $s6			#Set game Over
+		beq $t0, $s5, Exit_UpdateE 
+		
 		jr $ra					#return
+		
 
+Exit_UpdateE:  addi $s4, $zero, 1			#Set game over  
 
 
 
@@ -227,4 +260,25 @@ Loop_b:		li $v0, 11		#TAB for formatting
 
 		j Loop_p		#loop functionality
 
-exit_p:		jr $ra			#return 
+exit_p:		li $v0, 4
+		la $a0, playerPoints 	#Print /n
+		syscall
+		
+		li $v0 1
+		move $a0, $s6		#Print player points
+		syscall
+		
+		li $v0, 4
+		la $a0, AIPoints 	#Print \n
+		syscall
+		
+		li $v0, 1
+		move $a0, $s7		#Print player points
+		syscall
+		
+		li $v0, 11
+		li $a0, 10		#print \n
+		syscall
+		
+		
+		jr $ra			#return 
