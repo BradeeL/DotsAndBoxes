@@ -38,6 +38,8 @@ main_Loop:	jal Render			#Print board to console
 		
 		jal Update			#Function call update
 		
+		jal good_sound
+		
 		jal Render			#Render User move
 		jal AIExec			#AI Turn
 	
@@ -47,5 +49,7 @@ main_Loop:	jal Render			#Print board to console
 		j main_Loop			#Loop back to Render function call
 	
 		#GAME FINISHED
-exit_game:	li $v0 10 			#exit program
+exit_game:	
+		jal exit_sound
+		li $v0 10 			#exit program
 		syscall

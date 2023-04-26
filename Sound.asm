@@ -5,7 +5,7 @@
 #
 # This file contains various subroutines to play sounds when certain events happen during the game
 
-.globl bad_sound good_sound
+.globl bad_sound good_sound exit_sound
 
 .text
 j good_sound
@@ -45,3 +45,17 @@ good_sound:
 	li $v0 31
 	syscall
 	jr $ra
+	
+exit_sound:
+	li $a0 64
+	li $a1 50
+	li $a2 16
+	li $a3 127
+	li $v0 33
+	syscall
+	
+	li $a0 60
+	syscall
+	
+	li $a0 52
+	syscall
