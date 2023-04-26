@@ -95,7 +95,6 @@ Request:
 	
 	move $v0 $a0
 	
-	
 	addi $sp $sp 4
 	lw $ra ($sp)
 	jr $ra
@@ -104,6 +103,12 @@ InvalidLoop:
 	la $a0 invalidPrompt
 	li $v0 4
 	syscall
+	
+	addi $sp $sp -4
+	sw $ra 4($sp)
+	jal bad_sound
+	lw $ra 4($sp)
+	addi $sp $sp 4
 	
 	j Request
 	
