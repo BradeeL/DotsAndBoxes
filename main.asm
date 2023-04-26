@@ -41,22 +41,25 @@ main_Loop:	jal Render			#Print board to console
 		
 		jal Update			#Function call update
 		
-		jal good_sound
-		
 		#LOOPING
 		bne $zero, $s4, exit_game	#If game is not over(0) --> loop
 		bne $v0, $zero, main_Loop	#Loop back if player scored points
 		
+		#jal good_sound
+
+AI_Loop:
+
 		jal Render			#Render User move
 		jal AIExec			#AI Turn
 	
 		#LOOPING
 		bne $zero, $s4, exit_game	#If game is not over(0) --> loop
+		bne $v0, $zero, AI_Loop	#Loop back if player scored points
 	
 		j main_Loop			#Loop back to Render function call
 	
 		#GAME FINISHED
 exit_game:	
-		jal exit_sound
+		#jal exit_sound
 		li $v0 10 			#exit program
 		syscall
