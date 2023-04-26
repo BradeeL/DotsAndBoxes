@@ -10,7 +10,7 @@
  
 .data
 
-#SETTING GLOABALS
+#SETTING GLOBALS
 .globl Update Render 		#Setting global access for game funcitons
 
 .globl board			#Setting gloabal access for game board
@@ -31,6 +31,7 @@ board:
 	.asciiz "               "
 	.asciiz ". . . . . . . ."	# 6
 	
+#Render variable
 boardHLabel: .asciiz "A B C D E F G H\n" 
 playerPoints: .asciiz "\nPlayer Points: "
 AIPoints: .asciiz "\nAI Points: "
@@ -39,7 +40,7 @@ AIPoints: .asciiz "\nAI Points: "
 
 
 #Takes in three arguments (mem_displacement, direction, turn) and edits the board stored in memory
-#accordinngly and updates other game variables 	
+#accordinngly, updates other game variables, and returns a 1 if scored a point and a 0 if did not score a point
 Update:
 	
 #STORING USER VALUE RETURNED FROM REQUEST
@@ -92,58 +93,51 @@ dir_branch:	move $v0, $zero
 
 Vertical:	addi $t0, $zero, 124			#Store '|' into calculated memory location, $t0 holds ASCII value
 		sb $t0, board($t7)
-		move $t4, $t7
-		la $t3, board
-		add $t7, $t7, $t3
-		addi $t3, $zero, 16
 		
-v_checkR:	addi $t4, $t4, 2
+		move $t4, $t7				#Store mem_displacement for later calculations
+		
+		la $t3, board				#calculating the mem_addr of print
+		add $t7, $t7, $t3
+		
+		addi $t3, $zero, 16			#Storing constant 16
+		
+v_checkR:	addi $t4, $t4, 2			#Checking if location is on right border (loc + 2) % 16
 		div $t4, $t3
 		mfhi $t3
-		addi $t4, $t4, -2
+		addi $t4, $t4, -2			
 		beq $t3, $zero, v_checkL
 
-		lb $t0, 17($t7)			#Check right box lines
+		lb $t0, 17($t7)				#Check right box lines
 		beq $t0, 32, v_checkL			#If == ' ' --> break to left check (no Point)
 		
 		lb $t0, 2($t7)				#Check right box lines
 		beq $t0, 32, v_checkL			#If == ' ' --> break to left check  (no Point)
 		
-		lb $t0, -15($t7)				#Check right box lines
+		lb $t0, -15($t7)			#Check right box lines
 		beq $t0, 32, v_checkL			#If == ' ' --> break to left check  (no Point)
 		
 		addi $t1, $t1, 1			#Award a point
-		addi $sp $sp -4
-		sw $ra 4($sp)
-		jal point_sound
-		lw $ra 4($sp)
-		addi $sp $sp 4
-		addi $v0, $zero, 1			#Setting return value
+	
+		addi $v0, $zero, 1			#Setting return value (Scored point)
 		sb $t2, 1($t7)				#Storing graphical representation
 
 
-v_checkL:	addi $t3, $zero, 16
-		div $t4, $t3				#Checking if left most column is selected
+v_checkL:	addi $t3, $zero, 16			#Checking if loc is on left border (loc % 16)
+		div $t4, $t3				
 		mfhi $t3
 		beq $zero, $t3, Exit_dirIF
 		
 		
-		lb $t0, 15($t7)			#Check left box lines	
+		lb $t0, 15($t7)				#Check left box lines	
 		beq $t0, 32, Exit_dirIF		#If == ' ' --> break (no Point)
 		
 		lb $t0, -2($t7)				#Check left box lines	
 		beq $t0, 32, Exit_dirIF		#If == ' ' --> break (no Point)
 		
-		lb $t0, -17($t7)				#Check left box lines	
+		lb $t0, -17($t7)			#Check left box lines	
 		beq $t0, 32, Exit_dirIF		#If == ' ' --> break (no Point)
 		
 		addi $t1, $t1, 1			#Award a point
-		
-		addi $sp $sp -4
-		sw $ra 4($sp)
-		jal point_sound
-		lw $ra 4($sp)
-		addi $sp $sp 4
 		
 		addi $v0, $zero, 1			#Setting return value
 		sb $t2, -1($t7)				#Storing graphical representation
@@ -156,36 +150,32 @@ v_checkL:	addi $t3, $zero, 16
 
 Horizontal:	addi $t0, $zero, 45			#Store '-' into calculated memory location, $t0 holds ASCII value
 		sb $t0, board($t7)
-		move $t4, $t7
-		la $t3, board
+		
+		move $t4, $t7				#Store mem_displacement for later calculations
+		
+		la $t3, board				#Calculate memory location of print
 		add $t7, $t7, $t3
 		
 		
-h_checkU:	slti $t3, $t4, 16
+h_checkU:	slti $t3, $t4, 16			#Check if memory location is on top border (loc < 16)
 		bne $t3, $zero, h_checkD 
 		
 		lb $t0, -15($t7)			#Check right box lines
 		beq $t0, 32, h_checkD			#If == ' ' --> break to left check (no Point)
 		
-		lb $t0, -17($t7)				#Check right box lines
+		lb $t0, -17($t7)			#Check right box lines
 		beq $t0, 32, h_checkD			#If == ' ' --> break to left check  (no Point)
 		
-		lb $t0, -32($t7)				#Check right box lines
+		lb $t0, -32($t7)			#Check right box lines
 		beq $t0, 32, h_checkD			#If == ' ' --> break to left check  (no Point)
 		
 		addi $t1, $t1, 1			#Award a point
-		
-		addi $sp $sp -4
-		sw $ra 4($sp)
-		jal point_sound
-		lw $ra 4($sp)
-		addi $sp $sp 4
 		
 		addi $v0, $zero, 1			#Setting return value
 		sb $t2, -16($t7)			#Storing graphical representation
 
 
-h_checkD:	slti $t3, $t4, 160
+h_checkD:	slti $t3, $t4, 160			#Check if loc is on bottom border (loc >= 160)
 		beq $t3, $zero, Exit_dirIF
 		
 		lb $t0, 15($t7)				#Check left box lines	
@@ -198,12 +188,6 @@ h_checkD:	slti $t3, $t4, 160
 		beq $t0, 32, Exit_dirIF		#If == ' ' --> break (no Point)
 		
 		addi $t1, $t1, 1			#Award a point
-		
-		addi $sp $sp -4
-		sw $ra 4($sp)
-		jal point_sound
-		lw $ra 4($sp)
-		addi $sp $sp 4
 		
 		addi $v0, $zero, 1			#Setting return value
 		sb $t2, 16($t7)				#Storing graphical representation
@@ -222,7 +206,7 @@ AI_Turn:	add $s7, $s7, $t1			#Adding points
 
 		j Exit_UpdateN	
 
-Exit_UpdateN:	add $t0, $s7, $s6			#Set game Over
+Exit_UpdateN:	add $t0, $s7, $s6			#Set game Over if (player points + ai points = max points)
 		beq $t0, $s5, Exit_UpdateE 
 		
 		jr $ra					#return
