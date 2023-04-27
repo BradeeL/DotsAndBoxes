@@ -43,6 +43,8 @@ main_Loop:	jal Render			#Print board to console
 		
 		jal Request			#Request user input with validity handling returns (memory deplacement and dir of coordinate)
 		
+		jal good_sound
+		
 		move $a0, $v0			#Passes return values of Request(mem_displacement, direction, turn)
 		move $a1, $v1			#to arguments for Update.
 		addi $a2, $zero, 1		#Turn = 1 = player
@@ -70,6 +72,8 @@ AI_Loop:	jal AIExec			#AI Turn
 	
 #GAME FINISHED
 exit_game:	
+		jal exit_sound
+		
 		li $v0 4			#Set syscall code to print string
 		
 		slt $t0, $s7, $s6		#Store if user scored more point ? 1 : 0

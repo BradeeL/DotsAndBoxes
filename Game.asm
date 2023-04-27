@@ -83,8 +83,10 @@ Exit_rSWTCH:	move $t1, $zero				#Setting point tracker [$t1]
 		addi $t2, $zero, 80			#Setting point char as P
 		bne $a2, $zero, dir_branch		#Change point char setting if AI_Turn
 
-		addi $t2, $zero, 65			#Setting point char to A
+
 		
+		addi $t2, $zero, 65			#Setting point char to A
+						
 dir_branch:	move $v0, $zero
 		beq $t0, $zero, Horizontal		#If (A || D --> Horizontal) else if(W || S --> Vertical)
 
@@ -138,6 +140,7 @@ v_checkL:	addi $t3, $zero, 16			#Checking if loc is on left border (loc % 16)
 		beq $t0, 32, Exit_dirIF		#If == ' ' --> break (no Point)
 		
 		addi $t1, $t1, 1			#Award a point
+
 		
 		addi $v0, $zero, 1			#Setting return value
 		sb $t2, -1($t7)				#Storing graphical representation
@@ -170,6 +173,7 @@ h_checkU:	slti $t3, $t4, 16			#Check if memory location is on top border (loc < 
 		beq $t0, 32, h_checkD			#If == ' ' --> break to left check  (no Point)
 		
 		addi $t1, $t1, 1			#Award a point
+
 		
 		addi $v0, $zero, 1			#Setting return value
 		sb $t2, -16($t7)			#Storing graphical representation
@@ -188,6 +192,7 @@ h_checkD:	slti $t3, $t4, 160			#Check if loc is on bottom border (loc >= 160)
 		beq $t0, 32, Exit_dirIF		#If == ' ' --> break (no Point)
 		
 		addi $t1, $t1, 1			#Award a point
+
 		
 		addi $v0, $zero, 1			#Setting return value
 		sb $t2, 16($t7)				#Storing graphical representation
