@@ -1,5 +1,5 @@
-#Contributors: Mohammad Rahman,	Brady Lewis #//LOG: put in names and netids 
-#NETID: mzr210000, bal210004
+#Contributors: Mohammad Rahman,	Brady Lewis, Carlos Ortiz III, Mir Patel #//LOG: put in names and netids 
+#NETID: mzr210000, bal210004, cxo210012, mdp210002
 
 #--DESCRIPTON--
 #
