@@ -1,5 +1,5 @@
-#Contributors: Mohammad Rahman,	#//LOG: put in names and netids 
-#NETID: mzr210000,   
+#Contributors: Mohammad Rahman, Brady Lewis	#//LOG: put in names and netids 
+#NETID: mzr210000, bal210004
 
 #--DESCRIPTON--
 #
